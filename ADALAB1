@@ -1,0 +1,280 @@
+"""
+Algorithm Foundations Lab Assignment
+Author: Parv Arora
+"""
+
+import time
+import random
+import matplotlib.pyplot as plt
+from memory_profiler import memory_usage
+
+
+# -------------------------------------------------
+# Utility Function for Time and Memory Profiling
+# -------------------------------------------------
+
+def profile(func, *args):
+    start = time.time()
+    mem = memory_usage((func, args))
+    end = time.time()
+    return end - start, max(mem)
+
+
+# =================================================
+# TASK 1 – Growth Observation
+# =================================================
+
+def constant_time(n):
+    return n + 10
+
+
+def linear_time(n):
+    total = 0
+    for i in range(n):
+        total += i
+    return total
+
+
+def quadratic_time(n):
+    total = 0
+    for i in range(n):
+        for j in range(n):
+            total += i + j
+    return total
+
+
+def logarithmic_time(n):
+    while n > 1:
+        n //= 2
+    return n
+
+
+def run_task1():
+    sizes = [10, 100, 500]
+    functions = [constant_time, linear_time, quadratic_time, logarithmic_time]
+
+    time_results = {f.__name__: [] for f in functions}
+    space_results = {f.__name__: [] for f in functions}
+
+    for n in sizes:
+        for func in functions:
+            t, m = profile(func, n)
+            time_results[func.__name__].append(t)
+            space_results[func.__name__].append(m)
+
+    # Time Graph
+    plt.figure()
+    for name in time_results:
+        plt.plot(sizes, time_results[name], label=name)
+    plt.title("Task 1 - Time Complexity")
+    plt.xlabel("Input Size")
+    plt.ylabel("Time (seconds)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Space Graph
+    plt.figure()
+    for name in space_results:
+        plt.plot(sizes, space_results[name], label=name)
+    plt.title("Task 1 - Space Complexity")
+    plt.xlabel("Input Size")
+    plt.ylabel("Memory (MB)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
+# =================================================
+# TASK 2 – Search Analysis
+# =================================================
+
+def linear_search(arr, target):
+    for i in range(len(arr)):
+        if arr[i] == target:
+            return i
+    return -1
+
+
+def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+
+    while left <= right:
+        mid = (left + right) // 2
+
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return -1
+
+
+def run_task2():
+    sizes = [100, 1000, 5000]
+    time_results = {"Linear": [], "Binary": []}
+    space_results = {"Linear": [], "Binary": []}
+
+    for n in sizes:
+        arr = sorted(random.sample(range(n * 10), n))
+        target = arr[-1]
+
+        t1, m1 = profile(linear_search, arr, target)
+        t2, m2 = profile(binary_search, arr, target)
+
+        time_results["Linear"].append(t1)
+        time_results["Binary"].append(t2)
+
+        space_results["Linear"].append(m1)
+        space_results["Binary"].append(m2)
+
+    # Time Graph
+    plt.figure()
+    for name in time_results:
+        plt.plot(sizes, time_results[name], label=name)
+    plt.title("Task 2 - Time Complexity (Search)")
+    plt.xlabel("Input Size")
+    plt.ylabel("Time (seconds)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Space Graph
+    plt.figure()
+    for name in space_results:
+        plt.plot(sizes, space_results[name], label=name)
+    plt.title("Task 2 - Space Complexity (Search)")
+    plt.xlabel("Input Size")
+    plt.ylabel("Memory (MB)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
+# =================================================
+# TASK 3 – Recursion (Fibonacci)
+# =================================================
+
+def fibonacci_naive(n):
+    if n <= 1:
+        return n
+    return fibonacci_naive(n - 1) + fibonacci_naive(n - 2)
+
+
+def fibonacci_dp(n, memo=None):
+    if memo is None:
+        memo = {}
+
+    if n in memo:
+        return memo[n]
+
+    if n <= 1:
+        return n
+
+    memo[n] = fibonacci_dp(n - 1, memo) + fibonacci_dp(n - 2, memo)
+    return memo[n]
+
+
+def run_task3():
+    sizes = [5, 10, 15]
+    time_results = {"Naive": [], "DP": []}
+    space_results = {"Naive": [], "DP": []}
+
+    for n in sizes:
+        t1, m1 = profile(fibonacci_naive, n)
+        t2, m2 = profile(fibonacci_dp, n)
+
+        time_results["Naive"].append(t1)
+        space_results["Naive"].append(m1)
+
+        time_results["DP"].append(t2)
+        space_results["DP"].append(m2)
+
+    # Time Graph
+    plt.figure()
+    for name in time_results:
+        plt.plot(sizes, time_results[name], label=name)
+    plt.title("Task 3 - Time Complexity (Fibonacci)")
+    plt.xlabel("n")
+    plt.ylabel("Time (seconds)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Space Graph
+    plt.figure()
+    for name in space_results:
+        plt.plot(sizes, space_results[name], label=name)
+    plt.title("Task 3 - Space Complexity (Fibonacci)")
+    plt.xlabel("n")
+    plt.ylabel("Memory (MB)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
+# =================================================
+# TASK 4 – Recurrence Relations
+# =================================================
+
+def recurrence1(n):
+    if n <= 1:
+        return 1
+    return recurrence1(n // 2) + n
+
+
+def recurrence2(n):
+    if n <= 1:
+        return 1
+    return recurrence2(n // 2) + recurrence2(n // 2) + n
+
+
+def run_task4():
+    sizes = [16, 32, 64]
+    time_results = {"T(n)=T(n/2)+n": [], "T(n)=2T(n/2)+n": []}
+    space_results = {"T(n)=T(n/2)+n": [], "T(n)=2T(n/2)+n": []}
+
+    for n in sizes:
+        t1, m1 = profile(recurrence1, n)
+        t2, m2 = profile(recurrence2, n)
+
+        time_results["T(n)=T(n/2)+n"].append(t1)
+        space_results["T(n)=T(n/2)+n"].append(m1)
+
+        time_results["T(n)=2T(n/2)+n"].append(t2)
+        space_results["T(n)=2T(n/2)+n"].append(m2)
+
+    # Time Graph
+    plt.figure()
+    for name in time_results:
+        plt.plot(sizes, time_results[name], label=name)
+    plt.title("Task 4 - Time Complexity (Recurrence)")
+    plt.xlabel("n")
+    plt.ylabel("Time (seconds)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Space Graph
+    plt.figure()
+    for name in space_results:
+        plt.plot(sizes, space_results[name], label=name)
+    plt.title("Task 4 - Space Complexity (Recurrence)")
+    plt.xlabel("n")
+    plt.ylabel("Memory (MB)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
+# =================================================
+# MAIN
+# =================================================
+
+if __name__ == "__main__":
+    run_task1()
+    run_task2()
+    run_task3()
+    run_task4()
